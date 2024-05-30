@@ -25,11 +25,26 @@ func addNewSliceElementsTofile(filePath string, repo []string) {
 }
 
 func dumpStringSliceToFIle(repos []string, filePath string) {
-	panic("unimplemented")
+	content := strings.Join(repos,"\n")
+	os.WriteFile(filePath,[]byte(content),0755)
 }
 
-func joinSlices(repo []string, existingRepos []string) []string{
-	panic("unimplemented")
+func joinSlices(new []string, existingRepos []string) []string{
+	for _,val := range new{
+		if !sliceContains(existingRepos,val){
+			existingRepos = append(existingRepos, val)
+		}
+	}
+	return existingRepos
+}
+
+func sliceContains(existingRepos []string, value string) bool{
+	for _,val := range existingRepos{
+		if val == value{
+			return true
+		}
+	}
+	return false
 }
 
 func parseFileLinesToSlice(filePath string) []string{
@@ -50,11 +65,22 @@ func parseFileLinesToSlice(filePath string) []string{
 }
 
 func openFile(filePath string) *os.File{
-	panic("")
+	f,err := os.OpenFile(filePath,os.O_APPEND|os.O_RDWR,0755)
+	if err != nil{
+		if os.IsNotExist(err){
+			_,err = os.Create(filePath)
+			if err != nil{
+				panic(err)
+			}
+		} else {
+			panic(err)
+		}
+	}
+	return f
 }
 
 func getDotFilePath() string{
-	var usr,err = user.Current()
+	usr,err := user.Current()
 	if err != nil{
 		log.Fatal(err)
 	}
@@ -65,7 +91,7 @@ func getDotFilePath() string{
 func recursiveScanFolder(folder string) []string{
 	return scanGitFolder(make([]string,0),folder)
 }
-func scanGitFolder(folders []string,folder string) [] string{
+func scanGitFolder(folders []string,folder string) []string{
 	folder  = strings.TrimSuffix(folder,"/")
 	f,err := os.Open(folder)
 	if err != nil{

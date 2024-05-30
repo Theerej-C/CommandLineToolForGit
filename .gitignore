@@ -36,3 +36,7 @@ _testmain.go
 # OS-specific files
 .DS_Store
 Thumbs.db
+
+# Binary file
+
+commandlinetoolforgit
