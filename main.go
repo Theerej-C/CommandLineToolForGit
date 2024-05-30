@@ -3,10 +3,6 @@ package main
 import (
 	"flag"
 )
-func stats(email string){
-	print("stats")
-}
-
 func main()  {
 	var folder string
 	var email string

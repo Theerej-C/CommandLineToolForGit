@@ -17,6 +17,47 @@ func scan(folder string){
 	addNewSliceElementsTofile(filePath,repo)
 	fmt.Printf(("\n\nSuccessfully added\n\n"))
 }
+func recursiveScanFolder(folder string) []string{
+	return scanGitFolder(make([]string,0),folder)
+}
+func scanGitFolder(folders []string,folder string) []string{
+	folder  = strings.TrimSuffix(folder,"/")
+	f,err := os.Open(folder)
+	if err != nil{
+		log.Fatal(err)
+	}
+	files, err := f.Readdir(-1);
+	f.Close()
+	if err != nil{
+		log.Fatal(err)
+	}
+	var path string
+	for _,file := range files{
+		if file.IsDir(){
+			path = folder + "/" + file.Name()
+			if file.Name() == ".git"{
+				path = strings.TrimSuffix(path,"/.git")
+				fmt.Println(path)
+				folders = append(folders, path)
+				continue
+			}
+			if file.Name() == "vendor" || file.Name() == "node_modules"{
+				continue
+			}
+			folders = scanGitFolder(folders,path)
+		}
+	}
+	return folders
+}
+
+func getDotFilePath() string{
+	usr,err := user.Current()
+	if err != nil{
+		log.Fatal(err)
+	}
+	dotFile := usr.HomeDir + "/.gogitlocalstats"
+	return dotFile
+}
 
 func addNewSliceElementsTofile(filePath string, repo []string) {
 	existingRepos := parseFileLinesToSlice(filePath)
@@ -79,44 +120,5 @@ func openFile(filePath string) *os.File{
 	return f
 }
 
-func getDotFilePath() string{
-	usr,err := user.Current()
-	if err != nil{
-		log.Fatal(err)
-	}
-	dotFile := usr.HomeDir + "/.gogitlocalstats"
-	return dotFile
-}
 
-func recursiveScanFolder(folder string) []string{
-	return scanGitFolder(make([]string,0),folder)
-}
-func scanGitFolder(folders []string,folder string) []string{
-	folder  = strings.TrimSuffix(folder,"/")
-	f,err := os.Open(folder)
-	if err != nil{
-		log.Fatal(err)
-	}
-	files, err := f.Readdir(-1);
-	f.Close()
-	if err != nil{
-		log.Fatal(err)
-	}
-	var path string
-	for _,file := range files{
-		if file.IsDir(){
-			path = folder + "/" + file.Name()
-			if file.Name() == ".git"{
-				path = strings.TrimSuffix(path,"/.git")
-				fmt.Println(path)
-				folders = append(folders, path)
-				continue
-			}
-			if file.Name() == "vendor" || file.Name() == "node_modules"{
-				continue
-			}
-			folders = scanGitFolder(folders,path)
-		}
-	}
-	return folders
-}
+
